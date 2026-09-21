@@ -1,7 +1,3 @@
-import pypandoc
-
-readme = r"""# 🎵 SoundFlow
-
 ## Sistema de recomendación musical mediante búsqueda semántica
 
 SoundFlow es una aplicación desarrollada en Python que permite buscar y recomendar canciones a partir de una descripción escrita por el usuario. La idea principal del proyecto es que el usuario no tenga que conocer necesariamente el nombre de una canción, artista o utilizar exactamente las mismas palabras que aparecen en la información almacenada.
