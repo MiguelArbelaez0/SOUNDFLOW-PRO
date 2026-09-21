@@ -2,32 +2,43 @@ import pypandoc
 
 readme = r"""# 🎵 SoundFlow
 
-Sistema de recomendación de canciones basado en **búsqueda semántica con embeddings**.
+## Sistema de recomendación musical mediante búsqueda semántica
 
-SoundFlow permite escribir una descripción de lo que se quiere escuchar y encuentra las canciones más relacionadas según el significado de la consulta, aunque las palabras utilizadas no coincidan exactamente con las descripciones almacenadas.
+SoundFlow es una aplicación desarrollada en Python que permite buscar y recomendar canciones a partir de una descripción escrita por el usuario. La idea principal del proyecto es que el usuario no tenga que conocer necesariamente el nombre de una canción, artista o utilizar exactamente las mismas palabras que aparecen en la información almacenada.
 
-## 📌 Descripción del proyecto
+En lugar de realizar una búsqueda tradicional por coincidencia de palabras, SoundFlow utiliza inteligencia artificial mediante **embeddings** para representar el significado de los textos como vectores numéricos. Posteriormente, estos vectores se comparan con los vectores almacenados en una base de datos para encontrar las canciones que tienen un significado más cercano a la consulta realizada.
 
-Este proyecto fue desarrollado como parte de la actividad de bases de datos y utiliza:
+Por ejemplo, si el usuario escribe:
 
-- **Python** como lenguaje principal.
-- **Supabase / PostgreSQL** como base de datos.
-- **pgvector** para almacenar y comparar vectores.
-- **Sentence Transformers** para generar embeddings.
-- **Streamlit** para la interfaz web.
-- El modelo `all-MiniLM-L6-v2` para convertir textos en vectores de **384 dimensiones**.
+> "Algo muy tranquilo para dormir"
 
-El flujo general es:
+el sistema puede encontrar una canción descrita como música relajante para dormir, aunque la consulta y la descripción no utilicen exactamente las mismas palabras.
+
+---
+
+## 🎯 Objetivo
+
+El objetivo del proyecto es construir un sistema básico de recomendación musical utilizando búsqueda vectorial.
+
+El proyecto permite demostrar cómo una base de datos puede trabajar junto con modelos de inteligencia artificial para realizar búsquedas basadas en el **significado y el contexto** de una consulta.
+
+La aplicación recibe una descripción del usuario, genera un embedding de esa descripción y posteriormente consulta Supabase para encontrar las canciones cuyos embeddings presentan mayor similitud.
+
+---
+
+## 🧠 Funcionamiento del sistema
+
+El funcionamiento de SoundFlow se puede dividir en varias etapas.
+
+Primero, se dispone de un conjunto de canciones que contienen información como título, artista y descripción. Cada descripción es procesada mediante el modelo `all-MiniLM-L6-v2`.
+
+Este modelo transforma el texto en un vector numérico de **384 dimensiones**. Ese vector representa semánticamente el contenido de la descripción.
+
+Por ejemplo:
 
 ```text
-Consulta del usuario
-        ↓
-Sentence Transformer
-        ↓
-Embedding de 384 dimensiones
-        ↓
-Supabase + pgvector
-        ↓
-Búsqueda por similitud
-        ↓
-Canciones recomendadas
+"Música tranquila para dormir"
+              ↓
+      Sentence Transformer
+              ↓
+       Vector de 384 valores
