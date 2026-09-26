@@ -11,7 +11,7 @@ consulta = input("\n¿Qué tipo de canción estás buscando? ")
 embedding = modelo.encode(consulta).tolist()
 
 # Umbral de similitud
-match_threshold = 0.3
+match_threshold = 0.5
 
 # Buscar canciones similares en Supabase
 respuesta = supabase.rpc(
