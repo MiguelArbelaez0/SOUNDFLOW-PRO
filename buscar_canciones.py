@@ -1,7 +1,7 @@
 from database import supabase
 from sentence_transformers import SentenceTransformer
 
-# Cargar el modelo
+# Cargar el modelo de IA
 modelo = SentenceTransformer("all-MiniLM-L6-v2")
 
 # Pedir la búsqueda al usuario
@@ -10,12 +10,15 @@ consulta = input("\n¿Qué tipo de canción estás buscando? ")
 # Convertir la consulta en vector
 embedding = modelo.encode(consulta).tolist()
 
-# Buscar canciones similares
+# Umbral de similitud
+match_threshold = 0.3
+
+# Buscar canciones similares en Supabase
 respuesta = supabase.rpc(
     "buscar_canciones",
     {
         "query_embedding": embedding,
-        "match_threshold": 0.3,
+        "match_threshold": match_threshold,
         "match_count": 5
     }
 ).execute()
