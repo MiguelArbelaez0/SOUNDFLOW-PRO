@@ -126,6 +126,7 @@ if buscar:
                 "buscar_canciones",
                 {
                     "query_embedding": embedding,
+                    "match_threshold": 0.5,
                     "match_count": 5
                 }
             ).execute()
