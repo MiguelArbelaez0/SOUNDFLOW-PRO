@@ -9,10 +9,10 @@ import streamlit as st
 
 
 def render_search(song_service):
-    """Recoge una consulta y presenta canciones y su cercanía semántica.
+    """Recoge una consulta y presenta canciones ordenadas por relevancia.
 
-    La similitud mostrada es una medida de cercanía entre vectores; no es una
-    probabilidad de que la canción sea correcta. La vista no crea esos vectores.
+    La relevancia es el score final de la búsqueda híbrida, no una probabilidad.
+    La vista no crea los vectores ni decide qué resultados son relevantes.
 
     Args:
         song_service: Servicio que convierte la consulta y realiza la búsqueda.
@@ -32,9 +32,19 @@ def render_search(song_service):
         try:
             results = song_service.search(query)
             if not results:
-                st.info("No se encontraron canciones relacionadas.")
+                st.info(
+                    "No encontramos canciones suficientemente relacionadas "
+                    "con tu búsqueda."
+                )
+                st.caption(
+                    "Intenta describir mejor el estilo, estado de ánimo o "
+                    "actividad que buscas."
+                )
                 return
-            st.success(f"Se encontraron {len(results)} resultados.")
+            count = len(results)
+            noun = "resultado relevante" if count == 1 else "resultados relevantes"
+            verb = "Se encontró" if count == 1 else "Se encontraron"
+            st.success(f"{verb} {count} {noun}.")
             for index, song in enumerate(results, start=1):
                 st.subheader(f"🎵 {index}. {song.get('titulo', 'Sin título')}")
                 st.write(f"**Artista:** {song.get('artista', 'Desconocido')}")
@@ -44,7 +54,7 @@ def render_search(song_service):
                 if similarity is not None:
                     try:
                         similarity = float(similarity)
-                        st.write(f"**Similitud:** {similarity * 100:.2f}%")
+                        st.write(f"**Relevancia:** {similarity * 100:.2f}%")
                         st.progress(min(max(similarity, 0.0), 1.0))
                     except (TypeError, ValueError):
                         pass

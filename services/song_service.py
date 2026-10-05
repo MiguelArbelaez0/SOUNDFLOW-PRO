@@ -7,6 +7,11 @@ componentes visuales ni ejecuta directamente consultas de Supabase.
 
 from core.embeddings import EmbeddingService
 from repositories.song_repository import SongRepository
+from config.settings import (
+    ACCEPTABLE_RELEVANCE_THRESHOLD,
+    HIGH_RELEVANCE_THRESHOLD,
+    MAX_RESULTS,
+)
 
 
 class SongService:
@@ -38,7 +43,7 @@ class SongService:
         return self.repository.insert(song)
 
     def search(self, query: str):
-        """Convierte la consulta en vector y devuelve sus coincidencias.
+        """Busca canciones y descarta candidatos con relevancia insuficiente.
 
         Flujo: consulta → ``EmbeddingService`` → vector → ``SongRepository``
         → RPC ``buscar_canciones()`` → resultados.
@@ -47,10 +52,42 @@ class SongService:
             query: Texto escrito por la persona que busca música.
 
         Returns:
-            Resultados de la búsqueda semántica, con los campos de la RPC.
+            Hasta ``MAX_RESULTS`` canciones relevantes, ordenadas por score.
         """
+        if not isinstance(query, str) or not query.strip():
+            return []
+
         embedding = self.embeddings.generate(query)
-        return self.repository.search(embedding, query)
+        candidates = self.repository.search(embedding, query)
+
+        high_relevance = []
+        acceptable_relevance = []
+        for candidate in candidates or []:
+            try:
+                score = float(candidate.get("similitud"))
+            except (AttributeError, TypeError, ValueError):
+                continue
+
+            if not score == score or score in (float("inf"), float("-inf")):
+                continue
+            normalized_score = round(score / 100, 10) if score > 1 else score
+            if normalized_score < ACCEPTABLE_RELEVANCE_THRESHOLD:
+                continue
+
+            # No mutar el diccionario recibido del repositorio. Los scores
+            # decimales originales se conservan; solo se escala formato %.
+            result = candidate.copy()
+            if score > 1:
+                result["similitud"] = normalized_score
+            entry = (normalized_score, result)
+            if normalized_score >= HIGH_RELEVANCE_THRESHOLD:
+                high_relevance.append(entry)
+            else:
+                acceptable_relevance.append(entry)
+
+        ordered = sorted(high_relevance, key=lambda item: item[0], reverse=True)
+        ordered.extend(sorted(acceptable_relevance, key=lambda item: item[0], reverse=True))
+        return [result for _, result in ordered[:MAX_RESULTS]]
 
     def update_song_embedding(self, song: dict):
         """Regenera el vector de una canción y actualiza solo ese campo."""

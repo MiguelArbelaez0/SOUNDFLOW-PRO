@@ -12,6 +12,10 @@ EMBEDDING_DIMENSION = 384
 MATCH_THRESHOLD = 0.35
 # Número máximo de coincidencias solicitadas a la RPC.
 MATCH_COUNT = 5
+# Umbrales y límite del filtro final aplicado por SongService.
+HIGH_RELEVANCE_THRESHOLD = 0.50
+ACCEPTABLE_RELEVANCE_THRESHOLD = 0.40
+MAX_RESULTS = 5
 # Tabla existente de canciones y sus embeddings en Supabase.
 SONGS_TABLE = "canciones_vectoriales"
 # RPC existente que realiza la búsqueda vectorial en PostgreSQL/pgvector.
