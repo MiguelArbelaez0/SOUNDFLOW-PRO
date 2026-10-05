@@ -1,304 +1,106 @@
-# 🎵 SoundFlow AI
+# SoundFlow
 
-> Semantic music search and recommendation system using text embeddings and vector similarity.
+SoundFlow es una aplicación Streamlit para explorar una biblioteca musical y buscar canciones por el significado de una descripción, un género o un estado de ánimo.
 
-SoundFlow AI is a Python application that uses **natural-language queries, sentence embeddings, PostgreSQL, Supabase and pgvector** to retrieve music that is semantically related to what the user describes.
+## Tecnologías
 
-Instead of depending only on exact keywords, the application converts text into numerical vectors and compares them against stored song embeddings to find semantically similar results.
+- Python y Streamlit
+- Supabase sobre PostgreSQL
+- pgvector y la RPC `buscar_canciones()`
+- Sentence Transformers con `all-MiniLM-L6-v2`
+- `python-dotenv` para cargar credenciales locales
 
-## ✨ What the project demonstrates
-
-- Natural-language music search
-- Text embeddings with `Sentence Transformers`
-- `all-MiniLM-L6-v2`
-- Vector similarity search
-- PostgreSQL + Supabase
-- `pgvector`
-- Supabase RPC functions
-- Streamlit interface
-- Environment-based configuration
-- Python integration with a vector database
-
-## 🧠 How it works
-
-The main search flow is:
-
-```text
-User describes the music they want
-              ↓
-        Natural-language query
-              ↓
-     Sentence Transformer model
-              ↓
-        384-dimensional vector
-              ↓
-      Supabase RPC function
-              ↓
-        pgvector similarity
-              ↓
-       Top matching songs
-              ↓
-      Streamlit recommendations
-```
-
-### Example
-
-A user can search for:
-
-```text
-I want an energetic song for working out
-```
-
-The query is transformed into an embedding using `all-MiniLM-L6-v2`. That vector is then compared with the embeddings stored for songs in Supabase.
-
-The application requests the most relevant matches and displays the title, artist and similarity percentage.
-
-## 🏗️ Architecture
-
-The project is intentionally compact and organized around the main responsibilities of the application:
+## Estructura
 
 ```text
 SOUNDFLOW-PRO/
-│
 ├── app.py
-├── database.py
-├── buscar_canciones.py
-├── insertar_canciones.py
-├── actualizar_vector.py
-├── test_supabase.py
+├── config/
+│   └── settings.py
+├── core/
+│   └── embeddings.py
+├── data/
+│   └── supabase_client.py
+├── repositories/
+│   └── song_repository.py
+├── services/
+│   └── song_service.py
+├── ui/
+│   ├── styles.py
+│   ├── home.py
+│   ├── search.py
+│   └── add_song.py
+├── scripts/
+│   ├── buscar_canciones.py
+│   ├── insertar_canciones.py
+│   ├── actualizar_vector.py
+│   └── test_supabase.py
 ├── requirements.txt
-├── .gitignore
 └── README.md
 ```
 
-### Main components
+## Responsabilidades
 
-| File | Responsibility |
-|---|---|
-| `app.py` | Streamlit user interface and semantic search flow |
-| `database.py` | Supabase client configuration |
-| `buscar_canciones.py` | Command-line semantic search |
-| `insertar_canciones.py` | Generates embeddings and inserts songs |
-| `actualizar_vector.py` | Re-generates and updates a song embedding |
-| `test_supabase.py` | Basic Supabase connectivity test |
-| `requirements.txt` | Python dependency versions |
-| `.gitignore` | Excludes local environment and Python artifacts |
+- `config/`: modelo, dimensión del embedding y parámetros de búsqueda compartidos.
+- `core/`: construcción del texto de canciones y generación cacheada de embeddings.
+- `data/`: carga de `.env` y creación del único cliente Supabase.
+- `repositories/`: consultas e inserciones en `canciones_vectoriales` y llamada a la RPC.
+- `services/`: flujo de negocio para listar, buscar, agregar y actualizar canciones.
+- `ui/`: presentación de inicio, categorías, biblioteca, búsqueda, formulario y estilos.
+- `scripts/`: utilidades de terminal que reutilizan los mismos servicios y repositorio.
+- `app.py`: configuración de Streamlit y navegación entre vistas.
 
-## 🔎 Semantic search
+## Configuración e instalación
 
-SoundFlow uses the `all-MiniLM-L6-v2` Sentence Transformer model to generate text embeddings.
-
-For indexed songs, the project combines information such as:
-
-```text
-Title + Artist + Description
-```
-
-and generates an embedding from that text.
-
-For a search, the user's natural-language query is converted into another embedding.
-
-The application then calls the Supabase RPC function:
-
-```text
-buscar_canciones
-```
-
-with:
-
-- `query_embedding`
-- `match_threshold`
-- `match_count`
-
-The current Streamlit application uses:
-
-```text
-match_threshold = 0.5
-match_count = 5
-```
-
-This allows the application to retrieve up to five semantically relevant results that satisfy the configured similarity threshold.
-
-## 🗄️ Supabase + pgvector
-
-Supabase provides the PostgreSQL database used by the project.
-
-The song records contain information such as:
-
-- Title
-- Artist
-- Description
-- Embedding
-
-The embeddings are stored as vectors and searched using **pgvector**.
-
-The application does not perform the vector comparison entirely in Python. Instead, it sends the query embedding to a PostgreSQL/Supabase RPC function, allowing the database layer to perform the similarity search.
-
-## 🖥️ Streamlit interface
-
-The main interface is implemented in `app.py` with Streamlit.
-
-It provides:
-
-- Natural-language search input
-- Search button
-- Loading state
-- Similarity results
-- Artist and song information
-- Similarity percentage
-- Visual similarity progress bar
-- Empty-result handling
-- Error handling
-
-The application also caches the Sentence Transformer model with Streamlit's resource cache so that the model does not need to be loaded again for every interaction.
-
-## ⚙️ Installation
-
-### 1. Clone the repository
-
-```bash
-git clone https://github.com/MiguelArbelaez0/SOUNDFLOW-PRO.git
-cd SOUNDFLOW-PRO
-```
-
-### 2. Create a virtual environment
-
-Windows:
+Se requiere Python compatible con las dependencias fijadas en `requirements.txt`.
 
 ```powershell
 python -m venv venv
 venv\Scripts\activate
-```
-
-macOS / Linux:
-
-```bash
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### 3. Install dependencies
-
-```bash
 pip install -r requirements.txt
 ```
 
-## 🔐 Environment variables
-
-Create a local `.env` file in the project root.
+Crea `.env` en la raíz del proyecto con las credenciales de tu proyecto Supabase:
 
 ```env
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_KEY=your_supabase_key
+SUPABASE_URL=tu_url_de_supabase
+SUPABASE_KEY=tu_clave_de_supabase
 ```
 
-The repository intentionally does not include the local `.env` file.
+El archivo `.env` es local y está excluido de Git. No añadas credenciales al código.
 
-The application loads these variables through `python-dotenv` in `database.py`.
+## Ejecutar
 
-> Never commit real credentials, API keys or database passwords to the repository.
-
-## ▶️ Run the application
-
-Start the Streamlit interface with:
-
-```bash
+```powershell
 streamlit run app.py
 ```
 
-Streamlit will provide the local application URL in the terminal.
+Las herramientas de terminal se ejecutan como módulos desde la raíz:
 
-## 🧪 Utility scripts
-
-### Search from the terminal
-
-```bash
-python buscar_canciones.py
+```powershell
+python -m scripts.buscar_canciones
+python -m scripts.insertar_canciones
+python -m scripts.actualizar_vector
+python -m scripts.test_supabase
 ```
 
-This script asks for a natural-language query, generates its embedding and calls the same Supabase vector-search function.
+`insertar_canciones` agrega las canciones de ejemplo cada vez que se ejecuta. `actualizar_vector` vuelve a generar y guardar el embedding de Rain Sounds. Ejecútalos solo cuando quieras realizar esas escrituras.
 
-### Insert songs
+## Búsqueda semántica y embeddings
 
-```bash
-python insertar_canciones.py
-```
+El flujo de búsqueda convierte el texto escrito por la persona en un embedding de 384 dimensiones con `all-MiniLM-L6-v2`. El servicio pasa ese vector y el texto original al repositorio, que llama a `buscar_canciones()` con `query_embedding`, `query_text`, `match_threshold` y `match_count`. PostgreSQL y pgvector realizan la búsqueda de similitud; Streamlit presenta los resultados y su similitud.
 
-This script:
+La configuración central actual es:
 
-1. Loads the Sentence Transformer model.
-2. Builds the text representation of each song.
-3. Generates an embedding.
-4. Inserts the song data into Supabase.
-5. Stores the generated vector.
+| Ajuste | Valor |
+|---|---|
+| Modelo | `all-MiniLM-L6-v2` |
+| Dimensiones | `384` |
+| Umbral | `0.35` |
+| Máximo de resultados | `5` |
+| Tabla | `public.canciones_vectoriales` |
+| RPC | `buscar_canciones()` |
 
-### Update an embedding
+Para nuevas canciones, el texto común del embedding se construye como **Título + Artista + Género + Descripción**. El modelo se conserva en cache de recursos de Streamlit para evitar recargarlo en cada interacción.
 
-```bash
-python actualizar_vector.py
-```
-
-This utility retrieves a specific song, generates a new embedding and updates only its vector.
-
-### Test Supabase connectivity
-
-```bash
-python test_supabase.py
-```
-
-This performs a basic query against the `canciones_vectoriales` table to verify connectivity.
-
-## 🧰 Technologies
-
-### Backend / Application
-
-- Python
-- Streamlit
-
-### AI / NLP
-
-- Sentence Transformers
-- `all-MiniLM-L6-v2`
-- Text embeddings
-- Vector similarity
-
-### Database
-
-- PostgreSQL
-- Supabase
-- pgvector
-- Supabase RPC
-
-### Configuration
-
-- python-dotenv
-
-## 📌 Project status
-
-SoundFlow AI is a functional academic/personal project focused on demonstrating the integration of **semantic search, embeddings and vector databases** in a Python application.
-
-The repository currently focuses on the core semantic-search workflow rather than a production-scale recommendation platform.
-
-## 🔒 Security
-
-Configuration values are loaded from environment variables rather than being hard-coded in the application.
-
-The repository's `.gitignore` excludes:
-
-```text
-.env
-venv/
-__pycache__/
-*.pyc
-```
-
-For deployment or production use, credentials should be supplied through the hosting platform's secret/environment-variable mechanism.
-
-## 👨‍💻 Author
-
-**Miguel Arbeláez Vallejo**
-
-Software Developer focused on Flutter/Dart, Full-Stack development, backend systems, databases and applied AI.
-
-- GitHub: https://github.com/MiguelArbelaez0
-- LinkedIn: https://www.linkedin.com/in/miguel-arbelaez-v-57719542b/
+La aplicación asume que la tabla, la columna vectorial y la RPC ya existen en Supabase. Este proyecto no crea ni modifica el esquema remoto.
