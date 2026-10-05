@@ -26,10 +26,6 @@ st.markdown(
     """
     <style>
 
-    /* ======================================================
-       FONDO Y CONTENEDOR
-       ====================================================== */
-
     .stApp {
         background-color: #0f1117;
     }
@@ -40,92 +36,9 @@ st.markdown(
         padding-bottom: 4rem;
     }
 
-
-    /* ======================================================
-       TÍTULOS
-       ====================================================== */
-
-    .main-title {
-        font-size: 44px;
-        font-weight: 800;
-        color: white;
-        margin-bottom: 4px;
-    }
-
-    .main-subtitle {
-        font-size: 17px;
-        color: #9ca3af;
-        margin-bottom: 30px;
-    }
-
-
-    /* ======================================================
-       TARJETAS
-       ====================================================== */
-
-    .song-box {
-        background: #181b24;
-        border: 1px solid #292e3a;
-        border-radius: 16px;
-        padding: 18px;
-        min-height: 150px;
-        margin-bottom: 15px;
-    }
-
-    .song-title {
-        font-size: 18px;
-        font-weight: 700;
-        color: #ffffff;
-        margin-bottom: 7px;
-    }
-
-    .song-artist {
-        font-size: 14px;
-        color: #a5adba;
-        margin-bottom: 12px;
-    }
-
-    .song-genre {
-        font-size: 12px;
-        color: #d7dbe3;
-        background: #252a35;
-        padding: 5px 9px;
-        border-radius: 12px;
-        display: inline-block;
-    }
-
-
-    /* ======================================================
-       RESULTADOS
-       ====================================================== */
-
-    .result-box {
-        background: #181b24;
-        border: 1px solid #292e3a;
-        border-radius: 16px;
-        padding: 20px;
-        margin-bottom: 10px;
-    }
-
-
-    /* ======================================================
-       BOTONES
-       ====================================================== */
-
     .stButton > button {
         border-radius: 10px;
         font-weight: 600;
-    }
-
-
-    /* ======================================================
-       SEPARADORES
-       ====================================================== */
-
-    hr {
-        border-color: #292e3a;
-        margin-top: 25px;
-        margin-bottom: 25px;
     }
 
     </style>
@@ -265,26 +178,19 @@ def obtener_canciones():
 
 
 # ============================================================
-# CATEGORÍA VISUAL
-#
-# IMPORTANTE:
-# Esto solamente agrupa visualmente las canciones.
-# NO modifica el género almacenado en Supabase.
+# CATEGORÍAS VISUALES
 # ============================================================
 
 def categoria_visual(genero):
 
     genero = genero.lower().strip()
 
-    # ROCK
     if "rock" in genero:
         return "🎸 Rock"
 
-    # SALSA
     if "salsa" in genero:
         return "💃 Salsa"
 
-    # REGGAETÓN / TRAP URBANO
     if (
         "reggaetón" in genero
         or "reggaeton" in genero
@@ -292,7 +198,6 @@ def categoria_visual(genero):
     ):
         return "🔥 Reggaetón"
 
-    # HIP-HOP / RAP
     if (
         "hip-hop" in genero
         or "hip hop" in genero
@@ -300,7 +205,6 @@ def categoria_visual(genero):
     ):
         return "🎤 Hip-Hop"
 
-    # ELECTRÓNICA
     if (
         "electrónica" in genero
         or "electronica" in genero
@@ -308,23 +212,18 @@ def categoria_visual(genero):
     ):
         return "🎧 Electrónica"
 
-    # POP
     if "pop" in genero:
         return "🎶 Pop"
 
-    # VALLENATO
-    if "vallenato" in genero:
-        return "🪗 Vallenato"
-
-    # REGIONAL
     if "regional" in genero:
         return "🌵 Regional"
 
-    # BOLERO
+    if "vallenato" in genero:
+        return "🪗 Vallenato"
+
     if "bolero" in genero:
         return "🌹 Bolero"
 
-    # OTROS
     return "🎵 Otros"
 
 
@@ -362,22 +261,15 @@ def agrupar_canciones(canciones):
 # HEADER
 # ============================================================
 
-st.markdown(
-    """
-    <div class="main-title">
-        🎵 SoundFlow
-    </div>
+st.title("🎵 SoundFlow")
 
-    <div class="main-subtitle">
-        Descubre música por significado, género y emociones.
-    </div>
-    """,
-    unsafe_allow_html=True
+st.write(
+    "Descubre música por significado, género y emociones."
 )
 
 
 # ============================================================
-# NAVEGACIÓN PRINCIPAL
+# NAVEGACIÓN
 # ============================================================
 
 tab_inicio, tab_buscar, tab_agregar = st.tabs(
@@ -409,11 +301,11 @@ with tab_inicio:
             canciones
         )
 
-        # ====================================================
+        # ----------------------------------------------------
         # CATEGORÍAS
-        # ====================================================
+        # ----------------------------------------------------
 
-        st.subheader(
+        st.header(
             "🎧 Explora por categorías"
         )
 
@@ -433,10 +325,9 @@ with tab_inicio:
             label_visibility="collapsed"
         )
 
-
-        # ====================================================
+        # ----------------------------------------------------
         # FILTRAR
-        # ====================================================
+        # ----------------------------------------------------
 
         if categoria_seleccionada == "🌟 Todas":
 
@@ -449,10 +340,9 @@ with tab_inicio:
                 []
             )
 
-
-        # ====================================================
-        # ENCABEZADO DE CATEGORÍA
-        # ====================================================
+        # ----------------------------------------------------
+        # TÍTULO
+        # ----------------------------------------------------
 
         st.divider()
 
@@ -472,10 +362,9 @@ with tab_inicio:
             f"{len(canciones_mostradas)} canciones"
         )
 
-
-        # ====================================================
-        # TARJETAS
-        # ====================================================
+        # ----------------------------------------------------
+        # CANCIONES
+        # ----------------------------------------------------
 
         columnas = st.columns(3)
 
@@ -483,49 +372,40 @@ with tab_inicio:
             canciones_mostradas
         ):
 
+            titulo = cancion.get(
+                "titulo",
+                "Sin título"
+            )
+
+            artista = cancion.get(
+                "artista",
+                "Desconocido"
+            )
+
+            genero = cancion.get(
+                "genero",
+                "Sin género"
+            )
+
+            descripcion = cancion.get(
+                "descripcion",
+                ""
+            )
+
             with columnas[
                 indice % 3
             ]:
 
-                titulo = cancion.get(
-                    "titulo",
-                    "Sin título"
+                st.subheader(
+                    f"🎵 {titulo}"
                 )
 
-                artista = cancion.get(
-                    "artista",
-                    "Desconocido"
+                st.write(
+                    f"**Artista:** {artista}"
                 )
 
-                genero = cancion.get(
-                    "genero",
-                    "Sin género"
-                )
-
-                descripcion = cancion.get(
-                    "descripcion",
-                    ""
-                )
-
-                st.markdown(
-                    f"""
-                    <div class="song-box">
-
-                        <div class="song-title">
-                            🎵 {titulo}
-                        </div>
-
-                        <div class="song-artist">
-                            {artista}
-                        </div>
-
-                        <div class="song-genre">
-                            {genero}
-                        </div>
-
-                    </div>
-                    """,
-                    unsafe_allow_html=True
+                st.caption(
+                    f"🎧 {genero}"
                 )
 
                 with st.expander(
@@ -590,7 +470,7 @@ with tab_buscar:
 
                         st.info(
                             "No se encontraron canciones "
-                            "relacionadas con tu búsqueda."
+                            "relacionadas."
                         )
 
                     else:
@@ -629,22 +509,12 @@ with tab_buscar:
                                 "similitud"
                             )
 
+                            st.subheader(
+                                f"🎵 {indice}. {titulo}"
+                            )
 
-                            st.markdown(
-                                f"""
-                                <div class="result-box">
-
-                                    <div class="song-title">
-                                        🎵 {indice}. {titulo}
-                                    </div>
-
-                                    <div class="song-artist">
-                                        {artista}
-                                    </div>
-
-                                </div>
-                                """,
-                                unsafe_allow_html=True
+                            st.write(
+                                f"**Artista:** {artista}"
                             )
 
                             st.write(
@@ -655,7 +525,6 @@ with tab_buscar:
                                 f"**Descripción:** "
                                 f"{descripcion}"
                             )
-
 
                             if similitud is not None:
 
@@ -693,7 +562,6 @@ with tab_buscar:
 
                             st.divider()
 
-
                 except Exception as error:
 
                     st.error(
@@ -706,7 +574,7 @@ with tab_buscar:
 
 
 # ============================================================
-# AGREGAR CANCIÓN
+# AGREGAR
 # ============================================================
 
 with tab_agregar:
@@ -752,7 +620,6 @@ with tab_agregar:
             "🎵 Guardar canción",
             type="primary"
         )
-
 
     if enviar:
 
@@ -806,21 +673,6 @@ with tab_agregar:
                         st.info(
                             "🤖 Embedding de 384 dimensiones "
                             "generado automáticamente."
-                        )
-
-                        st.write(
-                            f"**Canción:** "
-                            f"{titulo.strip()}"
-                        )
-
-                        st.write(
-                            f"**Artista:** "
-                            f"{artista.strip()}"
-                        )
-
-                        st.write(
-                            f"**Género:** "
-                            f"{genero.strip()}"
                         )
 
                     else:
