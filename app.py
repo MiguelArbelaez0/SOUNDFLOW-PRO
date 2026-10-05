@@ -10,11 +10,69 @@ from database import supabase
 st.set_page_config(
     page_title="SoundFlow",
     page_icon="🎵",
-    layout="wide"
+    layout="wide",
+    initial_sidebar_state="collapsed"
 )
 
 MATCH_THRESHOLD = 0.35
 MATCH_COUNT = 5
+
+
+# ============================================================
+# ESTILOS
+# ============================================================
+
+st.markdown(
+    """
+    <style>
+
+    .stApp {
+        background-color: #0f1117;
+    }
+
+    .block-container {
+        max-width: 1400px;
+        padding-top: 2rem;
+        padding-bottom: 3rem;
+    }
+
+    /* Título principal */
+    h1 {
+        font-size: 42px !important;
+        font-weight: 800 !important;
+    }
+
+    h2 {
+        font-size: 28px !important;
+        font-weight: 750 !important;
+    }
+
+    h3 {
+        font-size: 20px !important;
+    }
+
+    /* Botones */
+    .stButton > button {
+        border-radius: 10px;
+        font-weight: 600;
+    }
+
+    /* Inputs */
+    .stTextInput input,
+    .stTextArea textarea {
+        border-radius: 10px;
+    }
+
+    /* Separadores */
+    hr {
+        margin-top: 25px;
+        margin-bottom: 25px;
+    }
+
+    </style>
+    """,
+    unsafe_allow_html=True
+)
 
 
 # ============================================================
@@ -34,12 +92,14 @@ modelo = cargar_modelo()
 # ============================================================
 
 def generar_embedding(texto: str):
+
     embedding = modelo.encode(texto)
+
     return embedding.tolist()
 
 
 # ============================================================
-# CONSTRUIR TEXTO PARA EL EMBEDDING
+# CONSTRUIR TEXTO PARA EMBEDDING
 # ============================================================
 
 def construir_texto_embedding(
@@ -48,6 +108,7 @@ def construir_texto_embedding(
     genero: str,
     descripcion: str
 ):
+
     return (
         f"Título: {titulo}. "
         f"Artista: {artista}. "
@@ -66,6 +127,7 @@ def agregar_cancion(
     genero: str,
     descripcion: str
 ):
+
     texto_embedding = construir_texto_embedding(
         titulo=titulo,
         artista=artista,
@@ -99,10 +161,8 @@ def agregar_cancion(
 
 def buscar_canciones(texto_busqueda: str):
 
-    # Generar embedding de la consulta
     embedding = generar_embedding(texto_busqueda)
 
-    # Llamar a la función RPC de Supabase
     respuesta = supabase.rpc(
         "buscar_canciones",
         {
@@ -117,36 +177,274 @@ def buscar_canciones(texto_busqueda: str):
 
 
 # ============================================================
+# OBTENER CANCIONES
+# ============================================================
+
+@st.cache_data(ttl=30)
+def obtener_canciones():
+
+    respuesta = (
+        supabase
+        .table("canciones_vectoriales")
+        .select(
+            "id,titulo,artista,genero,descripcion"
+        )
+        .order("id")
+        .execute()
+    )
+
+    return respuesta.data
+
+
+# ============================================================
+# OBTENER CATEGORÍAS
+# ============================================================
+
+def obtener_categorias(canciones):
+
+    categorias = {}
+
+    for cancion in canciones:
+
+        genero = cancion.get(
+            "genero",
+            "Sin género"
+        )
+
+        if genero not in categorias:
+            categorias[genero] = []
+
+        categorias[genero].append(cancion)
+
+    return categorias
+
+
+# ============================================================
 # ENCABEZADO
 # ============================================================
 
 st.title("🎵 SoundFlow")
 
-st.subheader(
-    "Búsqueda semántica de canciones"
-)
-
 st.write(
-    "Busca canciones utilizando lenguaje natural "
-    "o agrega nuevas canciones directamente desde "
-    "la aplicación."
+    "Descubre música por significado, género y emociones."
 )
 
 
 # ============================================================
-# PESTAÑAS
+# NAVEGACIÓN
 # ============================================================
 
-tab_buscar, tab_agregar = st.tabs(
+tab_inicio, tab_buscar, tab_agregar = st.tabs(
     [
+        "🏠 Inicio",
         "🔎 Buscar canciones",
-        "🎵 Agregar canción"
+        "➕ Agregar canción"
     ]
 )
 
 
 # ============================================================
-# PESTAÑA: BUSCAR
+# INICIO
+# ============================================================
+
+with tab_inicio:
+
+    canciones = obtener_canciones()
+
+    if not canciones:
+
+        st.info(
+            "No hay canciones registradas todavía."
+        )
+
+    else:
+
+        categorias = obtener_categorias(
+            canciones
+        )
+
+        # ----------------------------------------------------
+        # CATEGORÍAS
+        # ----------------------------------------------------
+
+        st.header("🎧 Explora por categorías")
+
+        st.caption(
+            "Selecciona una categoría para ver sus canciones."
+        )
+
+        nombres_categorias = list(
+            categorias.keys()
+        )
+
+        # Mostrar categorías en columnas
+        columnas = st.columns(
+            min(len(nombres_categorias), 5)
+        )
+
+        for indice, categoria in enumerate(
+            nombres_categorias
+        ):
+
+            columna = columnas[
+                indice % len(columnas)
+            ]
+
+            with columna:
+
+                if st.button(
+                    f"🎵 {categoria}",
+                    key=f"categoria_{indice}",
+                    use_container_width=True
+                ):
+
+                    st.session_state[
+                        "categoria_seleccionada"
+                    ] = categoria
+
+
+        # ----------------------------------------------------
+        # CATEGORÍA SELECCIONADA
+        # ----------------------------------------------------
+
+        categoria_seleccionada = st.session_state.get(
+            "categoria_seleccionada"
+        )
+
+        if categoria_seleccionada:
+
+            st.divider()
+
+            st.subheader(
+                f"🎵 {categoria_seleccionada}"
+            )
+
+            canciones_categoria = categorias[
+                categoria_seleccionada
+            ]
+
+            columnas_canciones = st.columns(3)
+
+            for indice, cancion in enumerate(
+                canciones_categoria
+            ):
+
+                with columnas_canciones[
+                    indice % 3
+                ]:
+
+                    st.markdown(
+                        f"### 🎵 {cancion.get('titulo', 'Sin título')}"
+                    )
+
+                    st.write(
+                        f"**Artista:** "
+                        f"{cancion.get('artista', 'Desconocido')}"
+                    )
+
+                    st.caption(
+                        cancion.get(
+                            "descripcion",
+                            ""
+                        )
+                    )
+
+
+        # ----------------------------------------------------
+        # BIBLIOTECA
+        # ----------------------------------------------------
+
+        st.divider()
+
+        st.header("🎵 Biblioteca")
+
+        st.write(
+            f"{len(canciones)} canciones disponibles"
+        )
+
+        # ----------------------------------------------------
+        # FILTRO DE BIBLIOTECA
+        # ----------------------------------------------------
+
+        filtro = st.text_input(
+            "🔎 Filtrar biblioteca",
+            placeholder=(
+                "Busca por título, artista o género..."
+            ),
+            key="filtro_biblioteca"
+        )
+
+        canciones_filtradas = canciones
+
+        if filtro.strip():
+
+            texto = filtro.lower().strip()
+
+            canciones_filtradas = [
+                cancion
+                for cancion in canciones
+                if (
+                    texto in cancion.get(
+                        "titulo",
+                        ""
+                    ).lower()
+                    or
+                    texto in cancion.get(
+                        "artista",
+                        ""
+                    ).lower()
+                    or
+                    texto in cancion.get(
+                        "genero",
+                        ""
+                    ).lower()
+                )
+            ]
+
+
+        # ----------------------------------------------------
+        # MOSTRAR BIBLIOTECA
+        # ----------------------------------------------------
+
+        columnas = st.columns(3)
+
+        for indice, cancion in enumerate(
+            canciones_filtradas
+        ):
+
+            with columnas[
+                indice % 3
+            ]:
+
+                st.markdown(
+                    f"### 🎵 {cancion.get('titulo', 'Sin título')}"
+                )
+
+                st.write(
+                    f"**{cancion.get('artista', 'Desconocido')}**"
+                )
+
+                st.caption(
+                    cancion.get(
+                        "genero",
+                        "Sin género"
+                    )
+                )
+
+                with st.expander(
+                    "Ver descripción"
+                ):
+
+                    st.write(
+                        cancion.get(
+                            "descripcion",
+                            ""
+                        )
+                    )
+
+
+# ============================================================
+# BUSCAR CANCIONES
 # ============================================================
 
 with tab_buscar:
@@ -154,17 +452,18 @@ with tab_buscar:
     st.header("🔎 Buscar canciones")
 
     st.write(
-        "Describe qué tipo de canción estás buscando "
-        "y SoundFlow encontrará resultados "
-        "semánticamente similares."
+        "Describe qué quieres escuchar y SoundFlow "
+        "encontrará canciones relacionadas "
+        "semánticamente."
     )
 
     consulta = st.text_input(
-        "¿Qué tipo de canción estás buscando?",
+        "¿Qué quieres escuchar?",
         placeholder=(
             "Ejemplo: salsa romántica, "
-            "rock alternativo, música para dormir..."
-        )
+            "rap, música para entrenar..."
+        ),
+        key="consulta_busqueda"
     )
 
     buscar = st.button(
@@ -177,14 +476,13 @@ with tab_buscar:
         if not consulta.strip():
 
             st.warning(
-                "Escribe una descripción para "
-                "realizar la búsqueda."
+                "Escribe una consulta para buscar."
             )
 
         else:
 
             with st.spinner(
-                "🤖 Generando embedding y buscando canciones..."
+                "🤖 Analizando tu búsqueda..."
             ):
 
                 try:
@@ -196,8 +494,8 @@ with tab_buscar:
                     if not resultados:
 
                         st.info(
-                            "No se encontraron "
-                            "canciones similares."
+                            "No se encontraron canciones "
+                            "relacionadas."
                         )
 
                     else:
@@ -207,80 +505,34 @@ with tab_buscar:
                             f"{len(resultados)} resultados."
                         )
 
-                        for i, cancion in enumerate(
+                        for indice, cancion in enumerate(
                             resultados,
                             start=1
                         ):
 
-                            titulo = cancion.get(
-                                "titulo",
-                                "Sin título"
+                            st.subheader(
+                                f"🎵 {indice}. "
+                                f"{cancion.get('titulo', 'Sin título')}"
                             )
 
-                            artista = cancion.get(
-                                "artista",
-                                "Desconocido"
+                            st.write(
+                                f"**Artista:** "
+                                f"{cancion.get('artista', 'Desconocido')}"
                             )
 
-                            genero = cancion.get(
-                                "genero",
-                                ""
+                            st.write(
+                                f"**Género:** "
+                                f"{cancion.get('genero', '')}"
                             )
 
-                            descripcion = cancion.get(
-                                "descripcion",
-                                ""
+                            st.write(
+                                f"**Descripción:** "
+                                f"{cancion.get('descripcion', '')}"
                             )
 
                             similitud = cancion.get(
                                 "similitud"
                             )
-
-
-                            # --------------------------------
-                            # TÍTULO
-                            # --------------------------------
-
-                            st.markdown(
-                                f"### 🎵 {i}. {titulo}"
-                            )
-
-
-                            # --------------------------------
-                            # ARTISTA
-                            # --------------------------------
-
-                            st.write(
-                                f"**Artista:** {artista}"
-                            )
-
-
-                            # --------------------------------
-                            # GÉNERO
-                            # --------------------------------
-
-                            if genero:
-
-                                st.write(
-                                    f"**Género:** {genero}"
-                                )
-
-
-                            # --------------------------------
-                            # DESCRIPCIÓN
-                            # --------------------------------
-
-                            if descripcion:
-
-                                st.write(
-                                    f"**Descripción:** "
-                                    f"{descripcion}"
-                                )
-
-
-                            # --------------------------------
-                            # SIMILITUD
-                            # --------------------------------
 
                             if similitud is not None:
 
@@ -314,14 +566,9 @@ with tab_buscar:
                                     ValueError
                                 ):
 
-                                    st.write(
-                                        f"**Similitud:** "
-                                        f"{similitud}"
-                                    )
-
+                                    pass
 
                             st.divider()
-
 
                 except Exception as error:
 
@@ -335,54 +582,50 @@ with tab_buscar:
 
 
 # ============================================================
-# PESTAÑA: AGREGAR CANCIÓN
+# AGREGAR CANCIÓN
 # ============================================================
 
 with tab_agregar:
 
-    st.header("🎵 Agregar nueva canción")
+    st.header("➕ Agregar canción")
 
     st.write(
-        "Completa los datos de la canción. "
-        "SoundFlow generará automáticamente "
-        "el embedding y almacenará la información "
-        "en Supabase."
+        "Agrega una canción y SoundFlow generará "
+        "automáticamente su embedding de 384 dimensiones."
     )
 
-
-    with st.form("formulario_cancion"):
+    with st.form(
+        "formulario_cancion"
+    ):
 
         titulo = st.text_input(
             "Título *",
-            placeholder="Ejemplo: La Innombrable"
+            placeholder="Ejemplo: Innerbloom"
         )
 
         artista = st.text_input(
             "Artista *",
-            placeholder="Ejemplo: Julius Popper"
+            placeholder="Ejemplo: RÜFÜS DU SOL"
         )
 
         genero = st.text_input(
             "Género *",
-            placeholder="Ejemplo: Rock alternativo"
+            placeholder="Ejemplo: Electrónica / Deep House"
         )
 
         descripcion = st.text_area(
             "Descripción *",
             placeholder=(
-                "Describe las características "
-                "de la canción. Ejemplo: rock "
-                "alternativo con una atmósfera "
-                "romántica y emocional."
+                "Describe el estilo, emociones, "
+                "energía y características de la canción."
             ),
             height=150
         )
 
         enviar = st.form_submit_button(
-            "🎵 Agregar canción",
+            "🎵 Guardar canción",
             type="primary"
         )
-
 
     if enviar:
 
@@ -413,7 +656,7 @@ with tab_agregar:
         else:
 
             with st.spinner(
-                "🤖 Generando embedding y guardando canción..."
+                "🤖 Generando embedding..."
             ):
 
                 try:
@@ -425,19 +668,21 @@ with tab_agregar:
                         descripcion=descripcion.strip()
                     )
 
-
                     if respuesta.data:
+
+                        obtener_canciones.clear()
 
                         st.success(
                             "✅ Canción agregada correctamente."
                         )
 
-                        st.markdown(
-                            "### Información guardada"
+                        st.info(
+                            "🤖 Embedding de 384 dimensiones "
+                            "generado automáticamente."
                         )
 
                         st.write(
-                            f"**Título:** "
+                            f"**Canción:** "
                             f"{titulo.strip()}"
                         )
 
@@ -451,28 +696,12 @@ with tab_agregar:
                             f"{genero.strip()}"
                         )
 
-                        st.write(
-                            f"**Descripción:** "
-                            f"{descripcion.strip()}"
-                        )
-
-                        st.info(
-                            "🤖 Embedding de 384 dimensiones "
-                            "generado automáticamente."
-                        )
-
-                        st.success(
-                            "☁️ Registro guardado correctamente "
-                            "en Supabase."
-                        )
-
                     else:
 
                         st.warning(
                             "La operación terminó, "
                             "pero Supabase no devolvió datos."
                         )
-
 
                 except Exception as error:
 
@@ -486,61 +715,33 @@ with tab_agregar:
 
 
 # ============================================================
-# BARRA LATERAL
+# SIDEBAR
 # ============================================================
 
-st.sidebar.title(
-    "⚙️ SoundFlow"
-)
+with st.sidebar:
 
-st.sidebar.write(
-    "Sistema de búsqueda semántica musical."
-)
+    st.title("🎵 SoundFlow")
 
-st.sidebar.write(
-    "Modelo de embeddings:"
-)
+    st.write(
+        "Sistema de búsqueda semántica musical."
+    )
 
-st.sidebar.code(
-    "all-MiniLM-L6-v2"
-)
+    st.divider()
 
-st.sidebar.write(
-    "Dimensión del vector:"
-)
+    st.write("**Modelo de embeddings**")
+    st.code("all-MiniLM-L6-v2")
 
-st.sidebar.code(
-    "384"
-)
+    st.write("**Dimensión**")
+    st.code("384")
 
-st.sidebar.write(
-    "Base de datos:"
-)
+    st.write("**Base de datos**")
+    st.code("Supabase")
 
-st.sidebar.code(
-    "Supabase"
-)
+    st.write("**Motor**")
+    st.code("PostgreSQL + pgvector")
 
-st.sidebar.write(
-    "Motor:"
-)
+    st.write("**Umbral**")
+    st.code("0.35")
 
-st.sidebar.code(
-    "PostgreSQL + pgvector"
-)
-
-st.sidebar.write(
-    "Umbral de similitud:"
-)
-
-st.sidebar.code(
-    "0.35"
-)
-
-st.sidebar.write(
-    "Máximo de resultados:"
-)
-
-st.sidebar.code(
-    "5"
-)
+    st.write("**Resultados máximos**")
+    st.code("5")
