@@ -1,9 +1,15 @@
-"""Home, category browsing, and song library view."""
+"""Vista de inicio, exploración por categorías y biblioteca.
+
+Recibe la lista ya obtenida por la aplicación y se ocupa de agruparla y
+presentarla. La clasificación por género es parte de la presentación; esta
+vista no consulta Supabase ni coordina la lógica de negocio.
+"""
 
 import streamlit as st
 
 
 def category_visual(genre: str) -> str:
+    """Asigna una etiqueta visual a partir del texto del género musical."""
     genre = genre.lower().strip()
     if "rock" in genre:
         return "🎸 Rock"
@@ -27,6 +33,7 @@ def category_visual(genre: str) -> str:
 
 
 def group_songs(songs: list[dict]) -> dict[str, list[dict]]:
+    """Agrupa la biblioteca por las etiquetas visuales de sus géneros."""
     groups = {}
     for song in songs:
         category = category_visual(song.get("genero", "Otros"))
@@ -35,6 +42,11 @@ def group_songs(songs: list[dict]) -> dict[str, list[dict]]:
 
 
 def render_home(songs: list[dict]):
+    """Muestra categorías seleccionables y tarjetas de canciones.
+
+    Args:
+        songs: Registros que la capa de aplicación obtuvo mediante el servicio.
+    """
     if not songs:
         st.info("No hay canciones registradas.")
         return

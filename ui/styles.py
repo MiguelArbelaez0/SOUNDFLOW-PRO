@@ -1,9 +1,14 @@
-"""Shared SoundFlow visual styles."""
+"""Estilos visuales compartidos por la interfaz de SoundFlow.
+
+Separar el CSS de las vistas facilita ajustar la apariencia global sin mezclar
+reglas visuales con la lógica de presentación de cada pantalla.
+"""
 
 import streamlit as st
 
 
 def apply_styles():
+    """Aplica el fondo, el ancho del contenido y el aspecto de los botones."""
     st.markdown(
         """<style>
         .stApp { background-color: #0f1117; }

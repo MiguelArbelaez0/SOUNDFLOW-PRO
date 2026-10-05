@@ -1,9 +1,14 @@
-"""Run semantic song search from the terminal."""
+"""Búsqueda semántica interactiva desde la terminal, sin abrir Streamlit.
+
+La búsqueda se delega en ``SongService`` para reutilizar el modelo, los
+parámetros y la RPC comunes de la aplicación.
+"""
 
 from services.song_service import SongService
 
 
 def main():
+    """Solicita una consulta y presenta las coincidencias y su similitud."""
     query = input("\n¿Qué tipo de canción estás buscando? ").strip()
     if not query:
         print("Escribe una consulta para buscar.")

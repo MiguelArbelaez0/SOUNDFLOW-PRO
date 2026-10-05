@@ -1,4 +1,9 @@
-"""Regenerate and update Rain Sounds using shared services."""
+"""Herramienta de mantenimiento para regenerar el vector de Rain Sounds.
+
+Localiza el registro con el repositorio y delega la generación y actualización
+del embedding en las capas existentes. No implementa su propio codificador.
+Al ejecutarse, modifica el embedding de esa canción en Supabase.
+"""
 
 from repositories.song_repository import SongRepository
 from services.song_service import SongService
@@ -6,6 +11,7 @@ from config.settings import EMBEDDING_DIMENSION
 
 
 def main():
+    """Busca Rain Sounds, muestra sus datos y solicita regenerar su vector."""
     repository = SongRepository()
     songs = repository.find_by_title_artist("Rain Sounds", "Nature Sounds")
     if not songs:

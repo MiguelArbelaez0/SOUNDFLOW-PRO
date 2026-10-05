@@ -1,10 +1,16 @@
-"""Insert the project's sample songs through the shared SongService."""
+"""Carga las canciones de ejemplo usando el flujo compartido de la aplicación.
+
+El script solo contiene los datos de ejemplo y su presentación en terminal;
+``SongService`` construye cada embedding y ``SongRepository`` realiza la
+inserción. Ejecutarlo agrega filas a Supabase.
+"""
 
 from config.settings import EMBEDDING_DIMENSION
 from services.song_service import SongService
 
 
 SONGS = [
+    # Datos de muestra; la preparación del embedding no se duplica aquí.
     {
         "titulo": "Rain Sounds",
         "artista": "Nature Sounds",
@@ -36,6 +42,7 @@ SONGS = [
 
 
 def main():
+    """Envía cada canción de muestra al servicio para generarla y guardarla."""
     service = SongService()
     for song in SONGS:
         print(f"\nProcesando: {song['titulo']}")

@@ -1,4 +1,10 @@
-"""Song creation form."""
+"""Formulario visual para incorporar canciones a la biblioteca.
+
+La vista solicita título, artista, género y descripción, valida que no estén
+vacíos y entrega esos datos a ``SongService``. No construye el texto vectorial,
+no genera embeddings y no accede a Supabase directamente; el servicio coordina
+ese flujo y esta vista comunica el resultado y actualiza la biblioteca en caché.
+"""
 
 import streamlit as st
 
@@ -6,6 +12,17 @@ from config.settings import EMBEDDING_DIMENSION
 
 
 def render_add_song(song_service, refresh_songs):
+    """Dibuja el formulario, valida sus campos y solicita guardar la canción.
+
+    Tras el envío, el servicio construye el texto, ``EmbeddingService`` produce
+    el vector de 384 dimensiones y ``SongRepository`` lo persiste en Supabase.
+    Si la operación devuelve datos, se invalida el caché y se muestra éxito;
+    si falla o no devuelve filas, se informa a la persona usuaria.
+
+    Args:
+        song_service: Servicio que coordina generación del embedding e inserción.
+        refresh_songs: Función para invalidar el caché de la biblioteca.
+    """
     st.header("➕ Agregar canción")
     st.write(
         "Agrega una canción y SoundFlow generará automáticamente su "

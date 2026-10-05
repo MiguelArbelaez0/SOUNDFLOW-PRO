@@ -1,4 +1,9 @@
-"""SoundFlow Streamlit entry point and navigation."""
+"""Punto de entrada de SoundFlow y coordinación de su navegación.
+
+Configura Streamlit, presenta las pestañas y conecta cada vista con
+los servicios que necesita. El flujo de dependencias es app.py → UI →
+services: aquí no se consulta Supabase ni se generan embeddings.
+"""
 
 import streamlit as st
 
@@ -12,10 +17,16 @@ from ui.styles import apply_styles
 
 @st.cache_data(ttl=30)
 def _get_songs():
+    """Obtiene la biblioteca mediante el servicio y conserva una copia breve.
+
+    El caché evita consultar la base de datos en cada interacción de Streamlit;
+    la vista de alta lo invalida después de guardar una canción.
+    """
     return SongService().get_songs()
 
 
 def main():
+    """Configura la aplicación y conecta navegación, vistas y servicios."""
     st.set_page_config(
         page_title="SoundFlow",
         page_icon="🎵",

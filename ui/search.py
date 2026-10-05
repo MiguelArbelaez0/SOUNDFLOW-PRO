@@ -1,9 +1,22 @@
-"""Semantic search interface."""
+"""Vista de búsqueda semántica desde la perspectiva de la persona usuaria.
+
+Recibe ``SongService`` para enviarle la consulta y presenta sus resultados.
+La conversión a embedding y la llamada a Supabase pertenecen a capas
+inferiores, de modo que esta vista solo maneja interacción y presentación.
+"""
 
 import streamlit as st
 
 
 def render_search(song_service):
+    """Recoge una consulta y presenta canciones y su cercanía semántica.
+
+    La similitud mostrada es una medida de cercanía entre vectores; no es una
+    probabilidad de que la canción sea correcta. La vista no crea esos vectores.
+
+    Args:
+        song_service: Servicio que convierte la consulta y realiza la búsqueda.
+    """
     st.header("🔎 Buscar canciones")
     st.write("Describe lo que quieres escuchar y SoundFlow encontrará canciones semánticamente relacionadas.")
     query = st.text_input(
