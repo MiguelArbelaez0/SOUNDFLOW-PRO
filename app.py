@@ -15,6 +15,14 @@ st.set_page_config(
 
 
 # ============================================================
+# CONFIGURACIÓN DE BÚSQUEDA
+# ============================================================
+
+MATCH_THRESHOLD = 0.35
+MATCH_COUNT = 5
+
+
+# ============================================================
 # MODELO DE EMBEDDINGS
 # ============================================================
 
@@ -55,27 +63,18 @@ def agregar_cancion(
     y guarda la canción en Supabase.
     """
 
-    # --------------------------------------------------------
-    # Texto utilizado para generar el embedding
-    # --------------------------------------------------------
+    # Texto utilizado para generar el embedding.
+    texto_embedding = (
+        f"Título: {titulo}. "
+        f"Artista: {artista}. "
+        f"Descripción: {descripcion}."
+    )
 
-    texto_embedding = f"""
-    Título: {titulo}
-    Artista: {artista}
-    Descripción: {descripcion}
-    """
-
-    # --------------------------------------------------------
     # Generar embedding
-    # --------------------------------------------------------
-
     vector = generar_embedding(texto_embedding)
 
-    # --------------------------------------------------------
-    # Datos correspondientes exactamente a la tabla
+    # Datos correspondientes a la tabla
     # canciones_vectoriales
-    # --------------------------------------------------------
-
     datos = {
         "titulo": titulo,
         "artista": artista,
@@ -83,10 +82,7 @@ def agregar_cancion(
         "embedding": vector
     }
 
-    # --------------------------------------------------------
     # Insertar en Supabase
-    # --------------------------------------------------------
-
     respuesta = (
         supabase
         .table("canciones_vectoriales")
@@ -107,22 +103,16 @@ def buscar_canciones(texto_busqueda: str):
     la función RPC buscar_canciones.
     """
 
-    # --------------------------------------------------------
     # Generar embedding de la consulta
-    # --------------------------------------------------------
-
     embedding = generar_embedding(texto_busqueda)
 
-    # --------------------------------------------------------
     # Ejecutar RPC
-    # --------------------------------------------------------
-
     respuesta = supabase.rpc(
         "buscar_canciones",
         {
             "query_embedding": embedding,
-            "match_threshold": 0.5,
-            "match_count": 5
+            "match_threshold": MATCH_THRESHOLD,
+            "match_count": MATCH_COUNT
         }
     ).execute()
 
@@ -175,13 +165,13 @@ with tab_buscar:
     consulta = st.text_input(
         "¿Qué tipo de canción estás buscando?",
         placeholder=(
-            "Ejemplo: sonidos relajantes de lluvia "
-            "y naturaleza"
+            "Ejemplo: rock alternativo, "
+            "música relajante para dormir..."
         )
     )
 
     # --------------------------------------------------------
-    # Botón de búsqueda
+    # Botón
     # --------------------------------------------------------
 
     buscar = st.button(
@@ -195,10 +185,7 @@ with tab_buscar:
 
     if buscar:
 
-        # ----------------------------------------------------
         # Validación
-        # ----------------------------------------------------
-
         if not consulta.strip():
 
             st.warning(
@@ -228,7 +215,7 @@ with tab_buscar:
                         )
 
                     # ----------------------------------------
-                    # Mostrar resultados
+                    # Resultados
                     # ----------------------------------------
 
                     else:
@@ -244,7 +231,7 @@ with tab_buscar:
                         ):
 
                             # --------------------------------
-                            # Información de la canción
+                            # Datos
                             # --------------------------------
 
                             titulo = cancion.get(
@@ -262,8 +249,12 @@ with tab_buscar:
                                 ""
                             )
 
+                            similitud = cancion.get(
+                                "similitud"
+                            )
+
                             # --------------------------------
-                            # TÍTULO
+                            # Título
                             # --------------------------------
 
                             st.markdown(
@@ -271,7 +262,7 @@ with tab_buscar:
                             )
 
                             # --------------------------------
-                            # ARTISTA
+                            # Artista
                             # --------------------------------
 
                             st.write(
@@ -279,7 +270,7 @@ with tab_buscar:
                             )
 
                             # --------------------------------
-                            # DESCRIPCIÓN
+                            # Descripción
                             # --------------------------------
 
                             if descripcion:
@@ -290,12 +281,8 @@ with tab_buscar:
                                 )
 
                             # --------------------------------
-                            # SIMILITUD
+                            # Similitud
                             # --------------------------------
-
-                            similitud = cancion.get(
-                                "similitud"
-                            )
 
                             if similitud is not None:
 
@@ -304,9 +291,6 @@ with tab_buscar:
                                     similitud = float(
                                         similitud
                                     )
-
-                                    # Convertir de 0-1
-                                    # a porcentaje
 
                                     porcentaje = (
                                         similitud * 100
@@ -317,7 +301,6 @@ with tab_buscar:
                                         f"{porcentaje:.2f}%"
                                     )
 
-                                    # Barra visual
                                     st.progress(
                                         min(
                                             max(
@@ -375,42 +358,30 @@ with tab_agregar:
 
     with st.form("formulario_cancion"):
 
-        # ----------------------------------------------------
-        # TÍTULO
-        # ----------------------------------------------------
-
+        # Título
         titulo = st.text_input(
             "Título *",
-            placeholder="Ejemplo: Rain Sounds"
+            placeholder="Ejemplo: La Innombrable"
         )
 
-        # ----------------------------------------------------
-        # ARTISTA
-        # ----------------------------------------------------
-
+        # Artista
         artista = st.text_input(
             "Artista *",
-            placeholder="Ejemplo: Nature Sounds"
+            placeholder="Ejemplo: Julius Popper"
         )
 
-        # ----------------------------------------------------
-        # DESCRIPCIÓN
-        # ----------------------------------------------------
-
+        # Descripción
         descripcion = st.text_area(
             "Descripción *",
             placeholder=(
                 "Describe las características de la canción. "
-                "Ejemplo: sonidos relajantes de lluvia y "
-                "naturaleza ideales para dormir y meditar."
+                "Ejemplo: rock alternativo con una atmósfera "
+                "romántica y emocional."
             ),
             height=150
         )
 
-        # ----------------------------------------------------
-        # BOTÓN
-        # ----------------------------------------------------
-
+        # Botón
         enviar = st.form_submit_button(
             "🎵 Agregar canción",
             type="primary"
@@ -422,39 +393,26 @@ with tab_agregar:
 
     if enviar:
 
-        # ----------------------------------------------------
         # Validar título
-        # ----------------------------------------------------
-
         if not titulo.strip():
 
             st.error(
                 "❌ El título es obligatorio."
             )
 
-        # ----------------------------------------------------
         # Validar artista
-        # ----------------------------------------------------
-
         elif not artista.strip():
 
             st.error(
                 "❌ El artista es obligatorio."
             )
 
-        # ----------------------------------------------------
         # Validar descripción
-        # ----------------------------------------------------
-
         elif not descripcion.strip():
 
             st.error(
                 "❌ La descripción es obligatoria."
             )
-
-        # ----------------------------------------------------
-        # Guardar canción
-        # ----------------------------------------------------
 
         else:
 
@@ -471,7 +429,7 @@ with tab_agregar:
                     )
 
                     # ----------------------------------------
-                    # Operación exitosa
+                    # Éxito
                     # ----------------------------------------
 
                     if respuesta.data:
@@ -537,9 +495,10 @@ st.sidebar.write(
     "Sistema de búsqueda semántica musical."
 )
 
-# ------------------------------------------------------------
-# Modelo
-# ------------------------------------------------------------
+
+# ============================================================
+# INFORMACIÓN DEL MODELO
+# ============================================================
 
 st.sidebar.write(
     "Modelo de embeddings:"
@@ -549,9 +508,10 @@ st.sidebar.code(
     "all-MiniLM-L6-v2"
 )
 
-# ------------------------------------------------------------
-# Dimensión
-# ------------------------------------------------------------
+
+# ============================================================
+# DIMENSIÓN
+# ============================================================
 
 st.sidebar.write(
     "Dimensión del vector:"
@@ -561,9 +521,10 @@ st.sidebar.code(
     "384"
 )
 
-# ------------------------------------------------------------
-# Base de datos
-# ------------------------------------------------------------
+
+# ============================================================
+# BASE DE DATOS
+# ============================================================
 
 st.sidebar.write(
     "Base de datos:"
@@ -573,9 +534,10 @@ st.sidebar.code(
     "Supabase"
 )
 
-# ------------------------------------------------------------
-# Motor
-# ------------------------------------------------------------
+
+# ============================================================
+# MOTOR
+# ============================================================
 
 st.sidebar.write(
     "Motor:"
@@ -585,21 +547,23 @@ st.sidebar.code(
     "PostgreSQL + pgvector"
 )
 
-# ------------------------------------------------------------
-# Umbral
-# ------------------------------------------------------------
+
+# ============================================================
+# UMBRAL
+# ============================================================
 
 st.sidebar.write(
     "Umbral de similitud:"
 )
 
 st.sidebar.code(
-    "0.5"
+    "0.35"
 )
 
-# ------------------------------------------------------------
-# Resultados
-# ------------------------------------------------------------
+
+# ============================================================
+# RESULTADOS
+# ============================================================
 
 st.sidebar.write(
     "Máximo de resultados:"
