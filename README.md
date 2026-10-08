@@ -186,7 +186,7 @@ La aplicación asume que la tabla, la columna vectorial y la RPC ya existen en S
 
 **Miguel Arbeláez Vallejo**
 
-Desarrollador de Software | Flutter y Dart | Desarrollo integral | Backend | IA y Datos
+Desarrollador de Software | Flutter y Dart | Desarrollo integral | Servidor | IA y Datos
 
 - GitHub: https://github.com/MiguelArbelaez0
 - LinkedIn: https://www.linkedin.com/in/miguel-arbelaez-v-57719542b/
