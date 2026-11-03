@@ -190,3 +190,11 @@ Flutter & Dart · Full-Stack · Backend · AI/Data
 
 - GitHub: https://github.com/MiguelArbelaez0
 - LinkedIn: https://www.linkedin.com/in/miguel-arbelaez-v-57719542b/
+
+---
+
+## 🔎 Alcance y verificación documental (2026-11-02)
+
+El proyecto contiene Streamlit, Sentence Transformers, Supabase, servicios/repositorios separados y pruebas de servicio. Para ejecutar la búsqueda se requiere que la tabla y la función RPC `buscar_canciones()` existan previamente en Supabase; el repositorio no incluye una migración para crearlas. No se ejecutaron pruebas ni consultas remotas durante esta auditoría.
+
+**Estado de la revisión:** contraste estático entre documentación, estructura y archivos de configuración/código seleccionados. No se ejecutaron compilaciones, pruebas automatizadas, despliegues ni auditorías dinámicas de seguridad. La documentación describe el alcance observado, sin certificar preparación para producción.
