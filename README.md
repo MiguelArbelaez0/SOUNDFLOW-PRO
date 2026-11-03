@@ -1,5 +1,12 @@
 # SoundFlow AI
 
+> **Resumen para evaluación técnica**  
+> **Stack:** Python · Streamlit · Sentence Transformers · Supabase · pgvector  
+> **Evidencia:** Demuestra embeddings, separación de servicios y búsqueda semántica; necesita configuración externa de Supabase.  
+> **Código relevante:** Para evaluar: `core/embeddings.py`, `services/song_service.py`, `repositories/` y `tests/`.  
+> **Verificación:** revisión estática de repositorio; no equivale a ejecución de tests ni certificación de producción.
+
+
 > Aplicación de búsqueda semántica de música desarrollada con Python, Streamlit, Sentence Transformers, PostgreSQL, Supabase y pgvector.
 
 SoundFlow AI es una aplicación orientada a inteligencia artificial y datos que permite explorar una biblioteca musical y encontrar canciones según el significado de una descripción, género o estado de ánimo.
