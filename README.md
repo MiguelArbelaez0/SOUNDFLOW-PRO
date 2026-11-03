@@ -1,11 +1,10 @@
 # SoundFlow AI
 
-> **Resumen para evaluación técnica**  
+> **En resumen**  
 > **Stack:** Python · Streamlit · Sentence Transformers · Supabase · pgvector  
-> **Evidencia:** Demuestra embeddings, separación de servicios y búsqueda semántica; necesita configuración externa de Supabase.  
-> **Código para revisar:** `core/embeddings.py`, `services/song_service.py`, `repositories/` y `tests/`.  
-> **Estado:** revisión documental; pruebas y despliegue no verificados.
-
+> **Funcionalidad:** embeddings, separación de servicios y búsqueda semántica; necesita configuración externa de Supabase.  
+> **Código principal:** `core/embeddings.py`, `services/song_service.py`, `repositories/` y `tests/`.  
+> **Pruebas:** ejecución no verificada.
 
 > Aplicación de búsqueda semántica de música desarrollada con Python, Streamlit, Sentence Transformers, PostgreSQL, Supabase y pgvector.
 
@@ -200,8 +199,7 @@ Flutter & Dart · Full-Stack · Backend · AI/Data
 
 ---
 
-## Estado técnico y limitaciones
+## Requisitos y limitaciones
 
-El proyecto contiene Streamlit, Sentence Transformers, Supabase, servicios/repositorios separados y pruebas de servicio. Para ejecutar la búsqueda se requiere que la tabla y la función RPC `buscar_canciones()` existan previamente en Supabase; el repositorio no incluye una migración para crearlas. No se ejecutaron pruebas ni consultas remotas durante esta auditoría.
+El proyecto contiene Streamlit, Sentence Transformers, Supabase, servicios/repositorios separados y pruebas de servicio. Para ejecutar la búsqueda se requiere que la tabla y la función RPC `buscar_canciones()` existan previamente en Supabase; el repositorio no incluye una migración para crearlas. La ejecución de pruebas y consultas remotas no está documentada.
 
-**Verificación:** análisis estático del repositorio. No se han comprobado aquí compilación, pruebas automatizadas, despliegue ni seguridad dinámica.
