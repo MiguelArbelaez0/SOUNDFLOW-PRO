@@ -1,5 +1,9 @@
 # SoundFlow AI
 
+> **Estado:** Completado  
+> **Versión:** `1.0.0 (VERSION)`  
+> **Tecnologías:** Python · Streamlit · Sentence Transformers · Supabase · pgvector
+
 > **En resumen**  
 > **Stack:** Python · Streamlit · Sentence Transformers · Supabase · pgvector  
 > **Funcionalidad:** embeddings, separación de servicios y búsqueda semántica; necesita configuración externa de Supabase.  
